@@ -1,68 +1,82 @@
+
 // SIGNUP
-
-function signup() {
-
-    let name = document.getElementById("signupName").value;
-    let email = document.getElementById("signupEmail").value;
-    let password = document.getElementById("signupPassword").value;
+async function signup() {
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const message = document.getElementById("signupMessage");
 
     if (name === "" || email === "" || password === "") {
-
-        document.getElementById("signupMessage").innerHTML =
-            "Please fill all the fields.";
-
+        message.innerHTML = "Please fill all the fields.";
         return;
     }
 
-    localStorage.setItem("name", name);
-    localStorage.setItem("email", email);
-    localStorage.setItem("password", password);
+    try {
+        const response = await fetch("http://localhost:5000/api/signup", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, email, password })
+        });
 
-    document.getElementById("signupMessage").innerHTML =
-        "Signup Successful!";
+        const data = await response.json();
+        message.innerHTML = data.message;
+
+    } catch (error) {
+        message.innerHTML = "Cannot connect to server. Please try again.";
+        console.error("Signup error:", error);
+    }
 }
 
 
 // USER LOGIN
+async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const message = document.getElementById("loginMessage");
 
-function login() {
+    if (email === "" || password === "") {
+        message.innerHTML = "Please enter email and password.";
+        return;
+    }
 
-    let email = document.getElementById("loginEmail").value;
-    let password = document.getElementById("loginPassword").value;
+    try {
+        const response = await fetch("http://localhost:5000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
 
-    let savedEmail = localStorage.getItem("email");
-    let savedPassword = localStorage.getItem("password");
+        const data = await response.json();
 
-    if (email === savedEmail && password === savedPassword) {
+        if (response.ok) {
+            message.innerHTML = data.message;
 
-        document.getElementById("loginMessage").innerHTML =
-            "Login Successful!";
+            localStorage.setItem("name", data.user.name);
+            localStorage.setItem("email", data.user.email);
+        } else {
+            message.innerHTML = data.message;
+        }
 
-    } else {
-
-        document.getElementById("loginMessage").innerHTML =
-            "Invalid email or password.";
-
+    } catch (error) {
+        message.innerHTML = "Cannot connect to server. Please try again.";
+        console.error("Login error:", error);
     }
 }
 
 
 // ADMIN LOGIN
-
 function adminLogin() {
-
-    let email = document.getElementById("adminEmail").value;
-    let password = document.getElementById("adminPassword").value;
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
+    const message = document.getElementById("adminMessage");
 
     if (email === "admin@bloosom.com" && password === "admin123") {
-
-        document.getElementById("adminMessage").innerHTML =
-            "Admin Login Successful!";
-
+        message.innerHTML = "Admin Login Successful!";
     } else {
-
-        document.getElementById("adminMessage").innerHTML =
-            "Invalid Admin Login.";
-
+        message.innerHTML = "Invalid Admin Login.";
     }
 }
